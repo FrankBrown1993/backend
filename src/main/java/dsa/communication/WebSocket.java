@@ -54,31 +54,6 @@ public class WebSocket {
     public void onMessage(String message, @PathParam("name") String name) {
         Jsonb jsonb = JsonbBuilder.create();
         Message m = jsonb.fromJson(message, Message.class);
-        if (m.type.equals("titelbereich")) {
-            Message answer = new Message();
-            answer.type = "titelbereich";
-            answer.code = 0;
-            answer.seq = -1;
-            JsonObject json = new JsonObject();
-            json.put("aktLeP", 28);
-            json.put("maxLeP", 30);
-            json.put("ini", 11);
-            json.put("gs", 7);
-            answer.body = json.toString();
-            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
-        }
-        if (m.type.equals("titelbereich2")) {
-            Message answer = new Message();
-            answer.type = "titelbereich";
-            answer.code = 1;
-            answer.seq = -1;
-            JsonObject json = new JsonObject();
-            json = new JsonObject();
-            json.put("aktLeP", 20);
-            json.put("aw", 5);
-            answer.body = json.toString();
-            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
-        }
         if (m.seq >= 0) {
             Message compound = null;
             if (m.body.equals("~END~")) {
@@ -90,12 +65,10 @@ public class WebSocket {
                 m = compound;
                 this.finishedSequence.remove(m.getIdentifier(name));
                 this.messageSequence.remove(m.getIdentifier(name));
-                // System.out.println(m);
-                getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(m));
+                handleMessage(m, name);
             }
         } else {
-            // System.out.println(m);
-            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(m));
+            handleMessage(m, name);
         }
     }
 
@@ -139,6 +112,44 @@ public class WebSocket {
             }
             compund.body += sequence[i].body;
         }
+
         return compund;
+    }
+
+    private void handleMessage(Message m, String name) {
+        Jsonb jsonb = JsonbBuilder.create();
+        if (m.type.equals("titelbereich")) {
+            Message answer = new Message();
+            answer.type = "titelbereich";
+            answer.code = 0;
+            answer.seq = -1;
+            JsonObject json = new JsonObject();
+            json.put("aktLeP", 28);
+            json.put("maxLeP", 30);
+            json.put("ini", 11);
+            json.put("gs", 7);
+            answer.body = json.toString();
+            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
+        }
+        if (m.type.equals("titelbereich2")) {
+            Message answer = new Message();
+            answer.type = "titelbereich";
+            answer.code = 1;
+            answer.seq = -1;
+            JsonObject json = new JsonObject();
+            json = new JsonObject();
+            json.put("aktLeP", 20);
+            json.put("aw", 5);
+            answer.body = json.toString();
+            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
+        }
+        if (m.type.equals("testfile")) {
+            Message answer = new Message();
+            answer.type = "hodensack";
+            answer.code = 1;
+            answer.seq = -1;
+            answer.body = m.body;
+            getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
+        }
     }
 }
