@@ -7,6 +7,7 @@ public class Message {
     public int seq;
 
     public Message() { }
+
     public Message(String type, int code, int seq, String body) {
         this.type = type;
         this.code = code;
@@ -21,6 +22,14 @@ public class Message {
         out += "seq: " + seq + "\n";
         out += "body: " + body;
         return out;
+    }
+
+    public void printHeader() {
+        String print = ">>> Message start <<<\n";
+        print += "type: " + type + "\n";
+        print += "code: " + code + "\n";
+        print += ">>> Message end <<<";
+        System.out.println(print);
     }
 
     public String getIdentifier(String userId) {

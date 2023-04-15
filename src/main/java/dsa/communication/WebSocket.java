@@ -52,6 +52,7 @@ public class WebSocket {
 
     @OnMessage
     public void onMessage(String message, @PathParam("name") String name) {
+        System.out.println("onMessage> " + name);
         Jsonb jsonb = JsonbBuilder.create();
         Message m = jsonb.fromJson(message, Message.class);
         if (m.seq >= 0) {
@@ -117,6 +118,17 @@ public class WebSocket {
     }
 
     private void handleMessage(Message m, String name) {
+        m.printHeader();
+        MessageHandler handler = new MessageHandler();
+        if (m.type.equals("titelbereich")) {
+            handler = new TitelbereichHandler();
+        }
+
+        Envelope envelope = handler.handleMessage(m);
+
+
+
+        /*
         Jsonb jsonb = JsonbBuilder.create();
         if (m.type.equals("titelbereich")) {
             Message answer = new Message();
@@ -151,5 +163,6 @@ public class WebSocket {
             answer.body = m.body;
             getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
         }
+        */
     }
 }
