@@ -131,8 +131,43 @@ public class Tabelle {
             } else {
                 query += values[i];
             }
-            query += ";";
         }
+        query += ";";
         return query;
     }
+
+    public String modificateWhere(String[] columnNames,
+                              String[] newValues,
+                              String[] attribute,
+                              String[] comparator,
+                              Object[] values) {
+        String query = "UPDATE " + name + "\n" +
+                "    SET ";
+
+        for (int i = 0; i < columnNames.length; i++) {
+            query += "\n        " + columnNames[i] + " = " + newValues[i];
+            if (i > 0 && i < columnNames.length - 1) {
+                query += ",";
+            }
+        }
+
+        query += "    WHERE";
+        for (int i = 0; i < attribute.length; i++) {
+            if (i > 0) {
+                query += " AND ";
+            }
+            query += "\n        \"" + attribute[i] + "\" " + comparator[i] + " ";
+            if (values[i] instanceof String) {
+                query += "'";
+                query += StringService.escapeApostrophs((String) values[i]);
+                query += "'";
+            } else {
+                query += values[i];
+            }
+        }
+        query += ";";
+        return query;
+    }
+
+
 }

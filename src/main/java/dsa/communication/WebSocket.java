@@ -1,6 +1,10 @@
 package dsa.communication;
 
+import dsa.character.Character;
+import dsa.db.BackupService;
+import dsa.db.DBCharacter;
 import io.quarkus.vertx.http.runtime.devmode.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -15,8 +19,10 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,6 +35,11 @@ public class WebSocket {
     private Map<String, Message[]> messageSequence = new HashMap<>();
     private Map<String, Boolean> finishedSequence = new HashMap<>();
 
+    boolean timerRunning = false;
+
+    private DBCharacter dbCharacter = DBCharacter.singleton();
+    private CharacterStorage characters = CharacterStorage.singleton();
+
     public Session getSessionOfUser(String user) {
         return socketSessions.get(user);
     }
@@ -37,12 +48,26 @@ public class WebSocket {
     public void onOpen(Session session, @PathParam("name") String name) {
         socketSessions.put(name, session);
         System.out.println("onOpen> " + name);
+
+        /*if (!timerRunning) {
+            timerRunning = true;
+            int seconds = 900;
+            new Timer().schedule(new BackupService(), 0, 1000 * seconds);
+        }*/
+
+        // ToDo: line below is just for testing - replace asap with working alternative
+        Message m = new Message("communication", "", "", 0, 5, -1, "character enter");
+        handleMessage(m, name);
     }
 
     @OnClose
     public void onClose(Session session, @PathParam("name") String name) {
-        socketSessions.remove(session);
         System.out.println("onClose> " + name);
+        socketSessions.remove(session);
+
+        int id = characters.getSocketCharacterId(name);
+        Message m = new Message("communication", "", "", 0, id, -1, "character leave");
+        handleMessage(m, name);
     }
 
     @OnError
@@ -106,7 +131,7 @@ public class WebSocket {
         String msgId = m.getIdentifier(userId);
         this.finishedSequence.put(msgId, Boolean.TRUE);
         Message[] sequence = this.messageSequence.get(msgId);
-        Message compund = new Message(m.type, m.code, -1, "");
+        Message compund = new Message(m.type, m.returnTo, m.modifier, m.code, m.charId, -1, "");
         for (int i = 0; i < sequence.length; i++) {
             if (sequence[i] == null) {
                 return null;
@@ -118,13 +143,28 @@ public class WebSocket {
     }
 
     private void handleMessage(Message m, String name) {
-        m.printHeader();
-        MessageHandler handler = new MessageHandler();
-        if (m.type.equals("titelbereich")) {
-            handler = new TitelbereichHandler();
+
+        Jsonb jsonb = JsonbBuilder.create();
+        MessageHandler handler = null;
+
+
+        if (m.type.equals("communication")) {
+            handler = new CommunicationHandler();
+        } else if (m.type.equals("energy")) {
+            handler = new EnergyHandler();
+        } else if (m.type.equals("modValues")) {
+            handler = new ModHandler();
+        } else if (m.type.equals("testfile")) {
+            handler = new TestFileHandler();
+        }
+        if (handler != null) {
+            Envelope envelope = handler.handleMessage(m, name);
+            if (envelope != null) {
+                getSessionOfUser(envelope.reciever).getAsyncRemote().sendText(jsonb.toJson(envelope.message));
+            }
         }
 
-        Envelope envelope = handler.handleMessage(m);
+
 
 
 

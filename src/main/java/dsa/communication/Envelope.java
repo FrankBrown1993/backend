@@ -8,4 +8,12 @@ public class Envelope {
     protected String sender;
     protected String reciever;
     protected Message message;
+
+    public Envelope() {
+    }
+
+    public Envelope(String sender, String reciever) {
+        this.sender = sender;
+        this.reciever = reciever;
+    }
 }
