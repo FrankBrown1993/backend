@@ -3,9 +3,15 @@ package dsa.character;
 import dsa.services.ArrayListDeepCloner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Character {
     private int id = -1;
+
+    // both dictionaries must be lower case!
+    private List<String> dictWords = Arrays.asList("erschoepfung");
+    private List<String> dictRplce = Arrays.asList("erschöpfung");
 
     /**
      * Grundeigenschaften (MU, KL, ...)
@@ -55,6 +61,10 @@ public class Character {
      * @return
      */
     public int getModifiedByAll(String name) {
+        int index = dictWords.indexOf(name.toLowerCase());
+        if (index >= 0) {
+            name = dictRplce.get(index);
+        }
         int sum = 0;
         double factor = 1.0;
         for (ModifiableValue mv : values) {
@@ -93,6 +103,10 @@ public class Character {
     }
 
     public int getGrundwert(String name) {
+        int index = dictWords.indexOf(name.toLowerCase());
+        if (index >= 0) {
+            name = dictRplce.get(index);
+        }
         ArrayList<String> modifier = new ArrayList<>();
         modifier.add("standard");
         return getModifiedBy(modifier, name);
@@ -106,6 +120,17 @@ public class Character {
         return profile.name;
     }
 
+    public String getPortrait() { return profile.portrait; }
+    public void setPortrait(String portrait) { this.profile.portrait = portrait; }
+
+    /**
+     * FUNCTION
+     * @return a copy of the profile
+     */
+    public Profile getProfile() {
+        return new Profile(profile);
+    }
+
 
     /**
      *
@@ -114,6 +139,10 @@ public class Character {
      * @return
      */
     public int getModifiedBy(ArrayList<String> modifier, String name) {
+        int index = dictWords.indexOf(name.toLowerCase());
+        if (index >= 0) {
+            name = dictRplce.get(index);
+        }
         if (modifier == null) {
             modifier = new ArrayList<>();
             modifier.add("standard");
@@ -136,9 +165,13 @@ public class Character {
     }
 
     public ArrayList<ModifiableValue> getModifier(String modified) {
+        int index = dictWords.indexOf(modified.toLowerCase());
+        if (index >= 0) {
+            modified = dictRplce.get(index);
+        }
         ArrayList<ModifiableValue> list = new ArrayList<>();
         for (ModifiableValue mv : values) {
-            if (mv.modified.equals(modified)) {
+            if (mv.modified.equalsIgnoreCase(modified)) {
                 list.add(mv);
             }
         }

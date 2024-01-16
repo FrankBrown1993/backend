@@ -14,6 +14,7 @@ public class CharacterStorage {
     private CharacterStorage() {}
 
     private Map<Integer, Character> characters = new HashMap<>();
+    private Map<Integer, Long> safeTimes = new HashMap<>();
     private Map<String, Integer> socketCharacters = new HashMap<>();
 
     public static CharacterStorage singleton() {
@@ -51,13 +52,25 @@ public class CharacterStorage {
     }
 
     public ArrayList<String> saveCharacter(int id) {
-        System.out.println("save character " + id);
+        long lastSaveTime = safeTimes.getOrDefault(id, 0L);
+        long currentTime = System.currentTimeMillis();
         ArrayList<String> meldungen = new ArrayList<>();
-        Character character = getCharacter(id);
-        if (character != null) {
-            meldungen = db.saveCharacter(getCharacter(id));
+        long deltaTime = currentTime - lastSaveTime;
+        if (deltaTime > 5000) {
+            safeTimes.put(id, currentTime);
+            System.out.println("last save was long enough ago");
+            System.out.println("save character " + id);
+            Character character = getCharacter(id);
+            if (character != null) {
+                meldungen = db.saveCharacter(getCharacter(id));
+            } else {
+                meldungen.add("Character with id " + id + " is null!");
+            }
         } else {
-            meldungen.add("Character with id " + id + " is null!");
+            String meldung = "last save was " + deltaTime +
+                    " ms ago. Wait at least 5 seconds!";
+            System.out.println(meldung);
+            meldungen.add(meldung);
         }
         return meldungen;
     }

@@ -69,6 +69,30 @@ public class DBCharacter {
         return wanted;
     }
 
+    public String updateProfile(int id, Profile profile) {
+        String meldung = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String[] attributes = {"CharacterID", "Name", "Geschlecht", "TsaTag", "Spezies", "Kultur", "Profession",
+                    "Haarfarbe", "Augenfarbe", "Schamhaare", "Brueste", "Genital",
+                    "Alter", "Groesse", "Gewicht", "Titel", "portrait"};
+            Object[] values = {id, profile.name, profile.geschlecht, profile.tsaTag,
+                    profile.spezies, profile.kultur, profile.profession,
+                    profile.haarfarbe, profile.augenfarbe, profile.schamhaare,
+                    profile.brueste, profile.genital,
+                    profile.alter, profile.groesse, profile.gewicht, profile.titel, profile.portrait};
+            int[] pk = {0};
+            Tabelle table = new Tabelle("\"Character\".\"_Uebersicht\"");
+            String query = table.insertInto(attributes, values, pk);
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            meldung = e.getMessage();
+        }
+        return meldung;
+    }
+
     public ArrayList<ModifiableValue> getModifiedValues(int id) {
         ArrayList<ModifiableValue> wanted = new ArrayList<>();
         try {
@@ -160,6 +184,11 @@ public class DBCharacter {
             if (meldung2 != null) {
                 meldungen.add(meldung2);
             }
+        }
+
+        String meldung = updateProfile(character.getId(), character.getProfile());
+        if (meldung != null) {
+            meldungen.add(meldung);
         }
         return meldungen;
     }

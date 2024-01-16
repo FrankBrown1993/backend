@@ -3,7 +3,6 @@ package dsa.communication;
 import dsa.character.Character;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

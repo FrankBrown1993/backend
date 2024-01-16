@@ -1,17 +1,10 @@
 package dsa.communication;
 
-import dsa.character.Character;
-import dsa.db.BackupService;
 import dsa.db.DBCharacter;
-import io.quarkus.vertx.http.runtime.devmode.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.json.JsonObjectBuilder;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
-import javax.validation.constraints.Negative;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -19,10 +12,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 import static java.util.Objects.requireNonNull;
 
@@ -150,12 +141,14 @@ public class WebSocket {
 
         if (m.type.equals("communication")) {
             handler = new CommunicationHandler();
-        } else if (m.type.equals("energy")) {
-            handler = new EnergyHandler();
+        } else if (m.type.equals("character")) {
+            handler = new CharacterHandler();
         } else if (m.type.equals("modValues")) {
             handler = new ModHandler();
         } else if (m.type.equals("testfile")) {
             handler = new TestFileHandler();
+        } else if (m.type.equals("adventure")) {
+            handler = new AdventureHandler();
         }
         if (handler != null) {
             Envelope envelope = handler.handleMessage(m, name);

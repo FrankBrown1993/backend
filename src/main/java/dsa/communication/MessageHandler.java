@@ -1,6 +1,9 @@
 package dsa.communication;
 
 import dsa.character.Character;
+import dsa.communication.CharacterStorage;
+import dsa.communication.Envelope;
+import dsa.communication.Message;
 
 /**
  * Diese Klasse kümmert sich um die Behandlung der allgemeinen Nachrichten.

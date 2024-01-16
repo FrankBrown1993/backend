@@ -18,6 +18,28 @@ public class Profile {
     public String titel;
     public String portrait;
 
+    public Profile() {}
+
+    public Profile(Profile other) {
+        this.name = other.name;
+        this.geschlecht = other.geschlecht;
+        this.tsaTag = other.tsaTag;
+        this.spezies = other.spezies;
+        this.kultur = other.kultur;
+        this.profession = other.profession;
+        this.haarfarbe = other.haarfarbe;
+        this.augenfarbe = other.augenfarbe;
+        this.schamhaare = other.schamhaare;
+        this.brueste = other.brueste;
+        this.genital = other.genital;
+        this.alter = other.alter;
+        this.groesse = other.groesse;
+        this.gewicht = other.gewicht;
+        this.titel = other.titel;
+        this.portrait = other.portrait;
+    }
+
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("  name: ");
