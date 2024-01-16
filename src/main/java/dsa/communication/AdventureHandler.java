@@ -5,6 +5,7 @@ import dsa.character.ModifiableValue;
 import dsa.db.DBAbenteuer;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,8 +13,9 @@ public class AdventureHandler extends MessageHandler {
     DBAbenteuer dbAbenteuer = DBAbenteuer.singleton();
 
     @Override
-    protected Envelope handleMessage(Message msg, String name) {
+    protected ArrayList<Envelope> handleMessage(Message msg, String name) {
         Envelope envelope = null;
+        ArrayList<Envelope> envelopes = new ArrayList<>();
         System.out.println(msg);
 
         envelope = new Envelope(name, name);
@@ -26,6 +28,7 @@ public class AdventureHandler extends MessageHandler {
             envelope.message = new Message(msg.returnTo, "-", "", 0,
                     msg.charId, -1, answerBody);
         }
-        return envelope;
+        envelopes.add(envelope);
+        return envelopes;
     }
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class CommunicationHandler extends MessageHandler {
     @Override
-    protected Envelope handleMessage(Message msg, String name) {
+    protected ArrayList<Envelope> handleMessage(Message msg, String name) {
         if (msg.body.equals("character enter")) {
             characters.putSocketCharacterId(name, msg.charId);
         } else if (msg.body.equals("character leave")) {

@@ -25,6 +25,8 @@ public class Character {
 
     private Profile profile;
 
+    private ArrayList<Beziehung> beziehungen = new ArrayList<>();
+
     /**
      *
      * @return a <b>DEEP COPY</b> (not modifiable) of values
@@ -49,10 +51,11 @@ public class Character {
         return wanted;
     }
 
-    public Character(int charId, ArrayList<ModifiableValue> values, Profile profile) {
+    public Character(int charId, ArrayList<ModifiableValue> values, Profile profile, ArrayList<Beziehung> beziehungen) {
         this.id = charId;
         this.values = values;
         this.profile = profile;
+        this.beziehungen = beziehungen;
     }
 
     /**

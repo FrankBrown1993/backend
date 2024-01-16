@@ -9,8 +9,9 @@ import java.util.ArrayList;
 
 public class ModHandler extends MessageHandler {
     @Override
-    protected Envelope handleMessage(Message msg, String name) {
+    protected ArrayList<Envelope> handleMessage(Message msg, String name) {
         Envelope envelope = new Envelope(name, name);
+        ArrayList<Envelope> envelopes = new ArrayList<>();
         System.out.println(msg);
         Character character = characters.getCharacter(msg.charId);
         ArrayList<ModifiableValue> list = character.getModifier(msg.body);
@@ -35,6 +36,7 @@ public class ModHandler extends MessageHandler {
         }
         String answerBody = jsonArray.toString();
         envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0, msg.charId, -1, answerBody);
-        return envelope;
+        envelopes.add(envelope);
+        return envelopes;
     }
 }

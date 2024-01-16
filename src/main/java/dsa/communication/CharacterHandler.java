@@ -5,6 +5,7 @@ import dsa.character.ModifiableValue;
 import dsa.character.Profile;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,9 +19,10 @@ public class CharacterHandler extends MessageHandler {
     private List<String> sozialstati = Arrays.asList("Abschaum", "Unterschicht", "Mittelstand", "Niederadel", "Adel", "Hochadel");
 
     @Override
-    protected Envelope handleMessage(Message msg, String name) {
+    protected ArrayList<Envelope> handleMessage(Message msg, String name) {
         Character character = characters.getCharacter(msg.charId);
         Envelope envelope = null;
+        ArrayList<Envelope> envelopes = new ArrayList<>();
         System.out.println(msg);
 
         envelope = new Envelope(name, name);
@@ -108,6 +110,7 @@ public class CharacterHandler extends MessageHandler {
             envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0,
                     msg.charId, -1, answerBody);
         }
-        return envelope;
+        envelopes.add(envelope);
+        return envelopes;
     }
 }

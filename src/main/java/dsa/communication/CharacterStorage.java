@@ -28,9 +28,21 @@ public class CharacterStorage {
         socketCharacters.put(socketId, charId);
     }
     public int getSocketCharacterId(String socketId) {
+
         return socketCharacters.get(socketId);
     }
+
+    public String getSocketId(int charId) {
+        String wanted = "";
+        for(String key : socketCharacters.keySet()) {
+            if (socketCharacters.get(key) == charId) {
+                wanted = key;
+            }
+        }
+        return wanted;
+    }
     public int removeSocketCharacter(String socketId) {
+
         return socketCharacters.remove(socketId);
     }
 

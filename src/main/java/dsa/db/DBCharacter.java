@@ -1,5 +1,6 @@
 package dsa.db;
 
+import dsa.character.Beziehung;
 import dsa.character.Character;
 import dsa.character.ModifiableValue;
 import dsa.character.Profile;
@@ -26,7 +27,8 @@ public class DBCharacter {
     public Character loadCharacter(int id) {
         ArrayList<ModifiableValue> values = getModifiedValues(id);
         Profile profile = getProfile(id);
-        Character character = new Character(id, values, profile);
+        ArrayList<Beziehung> beziehungen = getBeziehungen(id);
+        Character character = new Character(id, values, profile, beziehungen);
         return character;
     }
 
@@ -145,6 +147,70 @@ public class DBCharacter {
             String[] comparator = {"=", "="};
             Object[] values = {m.modified, m.modifier};
             Tabelle table = new Tabelle("\"Character\".\"" + id + "_ModifiableValues\"");
+            String query = table.deleteWhere(attributes, comparator, values);
+            System.out.println(query);
+            try {
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                meldung = e.getMessage();
+            }
+        }
+        return meldung;
+    }
+
+
+    public ArrayList<Beziehung> getBeziehungen(int id) {
+        ArrayList<Beziehung> wanted = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            Tabelle table = new Tabelle("\"Character\".\"" + id + "_Beziehungen\"");
+            String query = table.selectAll();
+            Statement stmt = conn.createStatement();
+            ResultSet rs=stmt.executeQuery(query);
+            while(rs.next()){
+                String name = rs.getString("name");
+                int freundsch = rs.getInt("freundschaftlich");
+                int romantik = rs.getInt("romantisch");
+                Beziehung bez = new Beziehung(name, freundsch, romantik);
+                wanted.add(bez);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return wanted;
+    }
+
+    public String addBeziehungen(int id, ArrayList<Beziehung> beziehungen) {
+        String meldung = null;
+        for (Beziehung b : beziehungen) {
+            String[] attributes = {"name", "freundschaftlich", "romantisch"};
+            Object[] values = {b.getName(), b.getFreundschaft(), b.getRomantik()};
+            int[] pk = {1};
+            Tabelle table = new Tabelle("\"Character\".\"" + id + "_Beziehungen\"");
+            String query = table.insertInto(attributes, values, pk);
+            Connection conn = DBConnection.getConnection();
+            System.out.println(query);
+            try {
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                meldung = e.getMessage();
+            }
+        }
+        return meldung;
+    }
+
+    public String deleteBeziehung(int id, ArrayList<Beziehung> beziehungen) {
+        String meldung = null;
+        for (Beziehung b : beziehungen) {
+            Connection conn = DBConnection.getConnection();
+            String[] attributes = {"name"};
+            String[] comparator = {"="};
+            Object[] values = {b.getName()};
+            Tabelle table = new Tabelle("\"Character\".\"" + id + "_Beziehungen\"");
             String query = table.deleteWhere(attributes, comparator, values);
             System.out.println(query);
             try {

@@ -12,6 +12,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -149,11 +150,16 @@ public class WebSocket {
             handler = new TestFileHandler();
         } else if (m.type.equals("adventure")) {
             handler = new AdventureHandler();
+        } else if (m.type.equals("beziehung")) {
+            handler = new BeziehungsHandler();
         }
         if (handler != null) {
-            Envelope envelope = handler.handleMessage(m, name);
-            if (envelope != null) {
-                getSessionOfUser(envelope.reciever).getAsyncRemote().sendText(jsonb.toJson(envelope.message));
+            //Envelope envelope = handler.handleMessage(m, name);
+            ArrayList<Envelope> envelopes = handler.handleMessage(m, name);
+            if (envelopes != null) {
+                for (Envelope e : envelopes) {
+                    getSessionOfUser(e.reciever).getAsyncRemote().sendText(jsonb.toJson(e.message));
+                }
             }
         }
 
