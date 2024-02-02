@@ -50,7 +50,7 @@ public class CharacterHandler extends MessageHandler {
             int value = character.getModifiedByAll(modified);
             json.put("akt" + modified, value);
             answerBody = json.toString();
-            envelope.message = new Message(msg.returnTo, "-", "", 0, msg.charId, -1, answerBody);
+            envelope.message = new Message(msg.returnType, "-", "", 0, msg.charId, -1, answerBody);
         } else if (msg.body.equals("all")) {
             JsonObject json = new JsonObject();
             /** Energien */
@@ -73,14 +73,14 @@ public class CharacterHandler extends MessageHandler {
                 json.put(s, wert);
             }
             answerBody = json.toString();
-            envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0,
+            envelope.message = new Message(msg.returnType, "-", msg.modifier, 0,
                     msg.charId, -1, answerBody);
         } else if (msg.body.equals("portrait")) {
             JsonObject json = new JsonObject();
             String portrait = character.getPortrait();
             json.put("portrait", portrait);
             answerBody = json.toString();
-            envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0,
+            envelope.message = new Message(msg.returnType, "-", msg.modifier, 0,
                     msg.charId, -1, answerBody);
         } else if (msg.body.startsWith("data:image")) {
             character.setPortrait(msg.body);
@@ -88,7 +88,7 @@ public class CharacterHandler extends MessageHandler {
             String portrait = character.getPortrait();
             json.put("portrait", portrait);
             answerBody = json.toString();
-            envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0,
+            envelope.message = new Message(msg.returnType, "-", msg.modifier, 0,
                     msg.charId, -1, answerBody);
         } else if (msg.body.equals("profil")) {
             JsonObject json = new JsonObject();
@@ -107,7 +107,7 @@ public class CharacterHandler extends MessageHandler {
             json.put("sozialer_stand", sozialstati.get(index));
             json.put("titel", profile.titel);
             answerBody = json.toString();
-            envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0,
+            envelope.message = new Message(msg.returnType, "-", msg.modifier, 0,
                     msg.charId, -1, answerBody);
         }
         envelopes.add(envelope);

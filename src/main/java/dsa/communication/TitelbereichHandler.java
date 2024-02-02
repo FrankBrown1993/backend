@@ -35,7 +35,7 @@ public class TitelbereichHandler extends MessageHandler {
 
 
         }
-        envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0, msg.charId, -1, answerBody);
+        envelope.message = new Message(msg.returnType, "-", msg.modifier, 0, msg.charId, -1, answerBody);
         System.out.println("answer with envelope");
         envelopes.add(envelope);
         return envelopes;

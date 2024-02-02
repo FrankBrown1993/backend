@@ -123,7 +123,7 @@ public class WebSocket {
         String msgId = m.getIdentifier(userId);
         this.finishedSequence.put(msgId, Boolean.TRUE);
         Message[] sequence = this.messageSequence.get(msgId);
-        Message compund = new Message(m.type, m.returnTo, m.modifier, m.code, m.charId, -1, "");
+        Message compund = new Message(m.type, m.returnType, m.modifier, m.code, m.charId, -1, "");
         for (int i = 0; i < sequence.length; i++) {
             if (sequence[i] == null) {
                 return null;
@@ -152,6 +152,8 @@ public class WebSocket {
             handler = new AdventureHandler();
         } else if (m.type.equals("beziehung")) {
             handler = new BeziehungsHandler();
+        }else if (m.type.equals("fight")) {
+            handler = new FightHandler();
         }
         if (handler != null) {
             //Envelope envelope = handler.handleMessage(m, name);

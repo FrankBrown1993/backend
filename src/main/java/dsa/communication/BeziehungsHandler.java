@@ -20,7 +20,7 @@ public class BeziehungsHandler extends MessageHandler{
         ArrayList<Envelope> envelopes = new ArrayList<>();
         System.out.println(msg);
 
-        envelopeToGM.reciever = msg.returnTo;
+        envelopeToGM.reciever = name;
 
 
         //füge Beziehung hinzu
@@ -44,6 +44,7 @@ public class BeziehungsHandler extends MessageHandler{
             json.put("romantisch", bez.getRomantik());
             backmsg.body = json.toString();
             envelopeToChar.message = backmsg;
+            envelopeToGM.message = backmsg;
         } else if(msg.code == 2) {
 
         } else if(msg.code == 3) {
@@ -51,7 +52,8 @@ public class BeziehungsHandler extends MessageHandler{
         } else if(msg.code == 4) {
 
         }
-
+        envelopes.add(envelopeToChar);
+        envelopes.add(envelopeToGM);
         return envelopes;
     }
 }

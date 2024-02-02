@@ -64,6 +64,7 @@ public class DBCharacter {
                 wanted.gewicht = rs.getInt("Gewicht");
                 wanted.titel = StringChecker.convertNullOrEmpty(rs.getString("Titel"));
                 wanted.portrait = StringChecker.convertNullOrEmpty(rs.getString("portrait"));
+                wanted.token = StringChecker.convertNullOrEmpty(rs.getString("token"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,12 +78,13 @@ public class DBCharacter {
             Connection conn = DBConnection.getConnection();
             String[] attributes = {"CharacterID", "Name", "Geschlecht", "TsaTag", "Spezies", "Kultur", "Profession",
                     "Haarfarbe", "Augenfarbe", "Schamhaare", "Brueste", "Genital",
-                    "Alter", "Groesse", "Gewicht", "Titel", "portrait"};
+                    "Alter", "Groesse", "Gewicht", "Titel", "portrait", "token"};
             Object[] values = {id, profile.name, profile.geschlecht, profile.tsaTag,
                     profile.spezies, profile.kultur, profile.profession,
                     profile.haarfarbe, profile.augenfarbe, profile.schamhaare,
                     profile.brueste, profile.genital,
-                    profile.alter, profile.groesse, profile.gewicht, profile.titel, profile.portrait};
+                    profile.alter, profile.groesse, profile.gewicht, profile.titel,
+                    profile.portrait, profile.token};
             int[] pk = {0};
             Tabelle table = new Tabelle("\"Character\".\"_Uebersicht\"");
             String query = table.insertInto(attributes, values, pk);

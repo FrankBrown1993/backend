@@ -35,7 +35,7 @@ public class ModHandler extends MessageHandler {
             }
         }
         String answerBody = jsonArray.toString();
-        envelope.message = new Message(msg.returnTo, "-", msg.modifier, 0, msg.charId, -1, answerBody);
+        envelope.message = new Message(msg.returnType, "-", msg.modifier, 0, msg.charId, -1, answerBody);
         envelopes.add(envelope);
         return envelopes;
     }

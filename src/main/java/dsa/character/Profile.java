@@ -17,6 +17,7 @@ public class Profile {
     public int gewicht;
     public String titel;
     public String portrait;
+    public String token;
 
     public Profile() {}
 
@@ -37,6 +38,7 @@ public class Profile {
         this.gewicht = other.gewicht;
         this.titel = other.titel;
         this.portrait = other.portrait;
+        this.token = other.token;
     }
 
 

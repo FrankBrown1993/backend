@@ -125,6 +125,9 @@ public class Character {
 
     public String getPortrait() { return profile.portrait; }
     public void setPortrait(String portrait) { this.profile.portrait = portrait; }
+    public String getToken() {
+        return profile.token;
+    }
 
     /**
      * FUNCTION

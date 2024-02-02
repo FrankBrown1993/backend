@@ -2,7 +2,7 @@ package dsa.communication;
 
 public class Message {
     public String type;
-    public String returnTo;
+    public String returnType;
     public String modifier;
     public int code;
     public int charId;
@@ -11,9 +11,9 @@ public class Message {
 
     public Message() { }
 
-    public Message(String type, String returnTo, String modifier, int code, int charId, int seq, String body) {
+    public Message(String type, String returnType, String modifier, int code, int charId, int seq, String body) {
         this.type = type;
-        this.returnTo = returnTo;
+        this.returnType = returnType;
         this.modifier = modifier;
         this.code = code;
         this.charId = charId;
@@ -24,7 +24,7 @@ public class Message {
     @Override
     public String toString() {
         String out = "type: " + type + "\n";
-        out += "returnTo: " + returnTo + "\n";
+        out += "returnTo: " + returnType + "\n";
         out += "modifier: " + modifier + "\n";
         out += "code: " + code + "\n";
         out += "charId: " + charId + "\n";
@@ -36,7 +36,7 @@ public class Message {
     public void printHeader() {
         String print = ">>> Message start <<<\n";
         print += "type: " + type + "\n";
-        print += "returnTo: " + returnTo + "\n";
+        print += "returnTo: " + returnType + "\n";
         print += "modifier: " + modifier + "\n";
         print += "code: " + code + "\n";
         print += "charId: " + charId + "\n";
@@ -46,7 +46,7 @@ public class Message {
 
     public String getIdentifier(String userId) {
         return "[" + userId + "],[type: " + type + "]," +
-                "[returnTo: " + returnTo + "]," +
+                "[returnTo: " + returnType + "]," +
                 "[modifier: " + modifier + "]," +
                 "[code: " + code + "]";
     }
