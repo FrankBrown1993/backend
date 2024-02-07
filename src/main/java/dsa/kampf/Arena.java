@@ -25,4 +25,14 @@ public class Arena {
         return isInArena;
     }
 
+    public void removeFromArena(int id) {
+        ArrayList<Fighter> temp = new ArrayList<>();
+        for (Fighter f : fighters) {
+            if (f.id != id) {
+                temp.add(f);
+            }
+        }
+        fighters = temp;
+    }
+
 }

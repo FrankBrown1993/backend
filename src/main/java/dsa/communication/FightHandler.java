@@ -114,8 +114,26 @@ public class FightHandler extends MessageHandler {
             backmsg.body = jsonArray.toString();
             backmsg.type = msg.returnType;
             envelopeToGM.message = backmsg;
-        }
+        } else if(msg.code == 3) { //lösche Fighter mit id
+            int charId = Integer.valueOf(msg.body);
+            arena.removeFromArena(charId);
+            Message backmsg = new Message();
+            JsonArray jsonArray = new JsonArray();
 
+            for (Fighter f : arena.fighters) {
+                JsonObject json = new JsonObject();
+                json.put("name", f.name);
+                json.put("id", f.id);
+                json.put("portrait", f.portrait);
+                json.put("token", f.token);
+                json.put("posX", f.position.x);
+                json.put("posY", f.position.y);
+                jsonArray.add(json);
+            }
+            backmsg.body = jsonArray.toString();
+            backmsg.type = msg.returnType;
+            envelopeToGM.message = backmsg;
+        }
         envelopes.add(envelopeToGM);
         System.out.println(envelopes);
         return envelopes;
