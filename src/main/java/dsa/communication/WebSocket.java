@@ -1,13 +1,10 @@
 package dsa.communication;
 
-import io.quarkus.vertx.http.runtime.devmode.Json;
-import io.vertx.core.json.JsonObject;
+import dsa.db.DBCharacter;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.json.JsonObjectBuilder;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
-import javax.validation.constraints.Negative;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -15,6 +12,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +27,11 @@ public class WebSocket {
     private Map<String, Message[]> messageSequence = new HashMap<>();
     private Map<String, Boolean> finishedSequence = new HashMap<>();
 
+    boolean timerRunning = false;
+
+    private DBCharacter dbCharacter = DBCharacter.singleton();
+    private CharacterStorage characters = CharacterStorage.singleton();
+
     public Session getSessionOfUser(String user) {
         return socketSessions.get(user);
     }
@@ -36,13 +39,32 @@ public class WebSocket {
     @OnOpen
     public void onOpen(Session session, @PathParam("name") String name) {
         socketSessions.put(name, session);
+        System.out.println(session.getId());
+        System.out.println("no of open sessions: " + session.getOpenSessions().size());
+        for (Session s : session.getOpenSessions()) {
+            System.out.println("  " + s.getId());
+        }
         System.out.println("onOpen> " + name);
+
+        /*if (!timerRunning) {
+            timerRunning = true;
+            int seconds = 900;
+            new Timer().schedule(new BackupService(), 0, 1000 * seconds);
+        }*/
+
+        // ToDo: line below is just for testing - replace asap with working alternative
+        Message m = new Message("communication", "", "", 0, 5, -1, "character enter");
+        handleMessage(m, name);
     }
 
     @OnClose
     public void onClose(Session session, @PathParam("name") String name) {
-        socketSessions.remove(session);
         System.out.println("onClose> " + name);
+        socketSessions.remove(session);
+
+        int id = characters.getSocketCharacterId(name);
+        Message m = new Message("communication", "", "", 0, id, -1, "character leave");
+        handleMessage(m, name);
     }
 
     @OnError
@@ -52,6 +74,7 @@ public class WebSocket {
 
     @OnMessage
     public void onMessage(String message, @PathParam("name") String name) {
+        System.out.println("onMessage> " + name);
         Jsonb jsonb = JsonbBuilder.create();
         Message m = jsonb.fromJson(message, Message.class);
         if (m.seq >= 0) {
@@ -105,7 +128,7 @@ public class WebSocket {
         String msgId = m.getIdentifier(userId);
         this.finishedSequence.put(msgId, Boolean.TRUE);
         Message[] sequence = this.messageSequence.get(msgId);
-        Message compund = new Message(m.type, m.code, -1, "");
+        Message compund = new Message(m.type, m.returnType, m.modifier, m.code, m.charId, -1, "");
         for (int i = 0; i < sequence.length; i++) {
             if (sequence[i] == null) {
                 return null;
@@ -117,6 +140,50 @@ public class WebSocket {
     }
 
     private void handleMessage(Message m, String name) {
+
+        Jsonb jsonb = JsonbBuilder.create();
+        MessageHandler handler = null;
+
+
+        if (m.type.equals("communication")) {
+            handler = new CommunicationHandler();
+        } else if (m.type.equals("character")) {
+            handler = new CharacterHandler();
+        } else if (m.type.equals("modValues")) {
+            handler = new ModHandler();
+        } else if (m.type.equals("testfile")) {
+            handler = new TestFileHandler();
+        } else if (m.type.equals("adventure")) {
+            handler = new AdventureHandler();
+        } else if (m.type.equals("beziehung")) {
+            handler = new BeziehungsHandler();
+        } else if (m.type.equals("fight")) {
+            handler = new FightHandler();
+        } else if (m.type.equals("auth")) {
+            handler = new AuthHandler();
+        } else if (m.type.equals("heldenerschaffung")) {
+            handler = new HeldenerschaffungHandler();
+        }
+        if (handler != null) {
+            //Envelope envelope = handler.handleMessage(m, name);
+            ArrayList<Envelope> envelopes = handler.handleMessage(m, name);
+            // if (envelopes.size() == 1 && m.type.equals("auth")) {
+            //    login(envelopes.get(0), name);
+            // }
+            if (envelopes != null) {
+                for (Envelope e : envelopes) {
+                    getSessionOfUser(e.reciever).getAsyncRemote().sendText(jsonb.toJson(e.message));
+                }
+            }
+        }
+
+
+
+
+
+
+
+        /*
         Jsonb jsonb = JsonbBuilder.create();
         if (m.type.equals("titelbereich")) {
             Message answer = new Message();
@@ -151,5 +218,12 @@ public class WebSocket {
             answer.body = m.body;
             getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
         }
+        */
+    }
+
+    private void login(Envelope e, String oldName) {
+        // String id = e.message.body;
+        // Session session = socketSessions.get(oldName);
+        // socketSessions.put(id, session);
     }
 }
