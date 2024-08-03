@@ -5,6 +5,7 @@ import dsa.db.DBCharacter;
 import dsa.db.DBCharakter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +42,13 @@ public class CharacterStorage {
         }
         return wanted;
     }
+
+    public ArrayList<String> getAllSocketIds() {
+        ArrayList<String> list = new ArrayList<>(socketCharacters.keySet());
+        return list;
+    }
+
+
     public int removeSocketCharacter(String socketId) {
 
         return socketCharacters.remove(socketId);

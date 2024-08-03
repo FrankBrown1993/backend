@@ -35,4 +35,14 @@ public class Arena {
         fighters = temp;
     }
 
+    public Fighter getFighter(int id) {
+        Fighter wanted = null;
+        for (Fighter f : fighters)  {
+            if (f.id == id) {
+                wanted = f;
+            }
+        }
+        return wanted;
+    }
+
 }

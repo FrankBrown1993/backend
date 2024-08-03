@@ -10,12 +10,13 @@ public class Fighter {
     public int basisIni;
     public int aktIni;
     public Position position;
+    public double rotation;
     public double gsBasis;
     public double gsAkt;
     public double movement;
 
     public Fighter(int id, String name, String token, String portrait, int basisIni, int aktIni,
-                   Position position, double gsBasis, double gsAkt, double movement) {
+                   Position position, double rotation, double gsBasis, double gsAkt, double movement) {
         this.id = id;
         this.name = name;
         this.token = token;
@@ -23,6 +24,7 @@ public class Fighter {
         this.basisIni = basisIni;
         this.aktIni = aktIni;
         this.position = position;
+        this.rotation = rotation;
         this.gsBasis = gsBasis;
         this.gsAkt = gsAkt;
         this.movement = movement;

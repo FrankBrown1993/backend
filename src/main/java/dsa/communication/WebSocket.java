@@ -39,6 +39,11 @@ public class WebSocket {
     @OnOpen
     public void onOpen(Session session, @PathParam("name") String name) {
         socketSessions.put(name, session);
+        System.out.println(session.getId());
+        System.out.println("no of open sessions: " + session.getOpenSessions().size());
+        for (Session s : session.getOpenSessions()) {
+            System.out.println("  " + s.getId());
+        }
         System.out.println("onOpen> " + name);
 
         /*if (!timerRunning) {
@@ -152,18 +157,27 @@ public class WebSocket {
             handler = new AdventureHandler();
         } else if (m.type.equals("beziehung")) {
             handler = new BeziehungsHandler();
-        }else if (m.type.equals("fight")) {
+        } else if (m.type.equals("fight")) {
             handler = new FightHandler();
+        } else if (m.type.equals("auth")) {
+            handler = new AuthHandler();
+        } else if (m.type.equals("heldenerschaffung")) {
+            handler = new HeldenerschaffungHandler();
         }
         if (handler != null) {
             //Envelope envelope = handler.handleMessage(m, name);
             ArrayList<Envelope> envelopes = handler.handleMessage(m, name);
+            // if (envelopes.size() == 1 && m.type.equals("auth")) {
+            //    login(envelopes.get(0), name);
+            // }
             if (envelopes != null) {
                 for (Envelope e : envelopes) {
                     getSessionOfUser(e.reciever).getAsyncRemote().sendText(jsonb.toJson(e.message));
                 }
             }
         }
+
+
 
 
 
@@ -205,5 +219,11 @@ public class WebSocket {
             getSessionOfUser(name).getAsyncRemote().sendText(jsonb.toJson(answer));
         }
         */
+    }
+
+    private void login(Envelope e, String oldName) {
+        // String id = e.message.body;
+        // Session session = socketSessions.get(oldName);
+        // socketSessions.put(id, session);
     }
 }

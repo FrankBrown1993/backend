@@ -26,6 +26,7 @@ public class FightHandler extends MessageHandler {
         System.out.println(msg);
         System.out.println("msg Header:");
         msg.printHeader();
+        boolean returnToSender = true;
 
         envelopeToGM.reciever = name;
 
@@ -56,6 +57,13 @@ public class FightHandler extends MessageHandler {
             backmsg.type = msg.returnType;
             backmsg.printHeader();
             envelopeToGM.message = backmsg;
+            for (String sId : storage.getAllSocketIds()) {
+                System.out.println("Fight handler add envelope to " + sId);
+                Envelope envelope = new Envelope();
+                envelope.reciever = sId;
+                envelope.message = backmsg;
+                envelopes.add(envelope);
+            }
 
         //Fuege Fighter der Arena hinzu - Initialisierung
         } else if(msg.code == 1) {
@@ -90,11 +98,19 @@ public class FightHandler extends MessageHandler {
                     json.put("token", f.token);
                     json.put("posX", f.position.x);
                     json.put("posY", f.position.y);
+                    json.put("rotation", f.rotation);
                     jsonArray.add(json);
             }
             backmsg.body = jsonArray.toString();
             backmsg.type = msg.returnType;
             //backmsg.printHeader();
+            for (String sId : storage.getAllSocketIds()) {
+                System.out.println("Fight handler add envelope to " + sId);
+                Envelope envelope = new Envelope();
+                envelope.reciever = sId;
+                envelope.message = backmsg;
+                envelopes.add(envelope);
+            }
             envelopeToGM.message = backmsg;
         } else if(msg.code == 2) { //send all fighters back
             //send fighters back to GM
@@ -109,6 +125,7 @@ public class FightHandler extends MessageHandler {
                 json.put("token", f.token);
                 json.put("posX", f.position.x);
                 json.put("posY", f.position.y);
+                json.put("rotation", f.rotation);
                 jsonArray.add(json);
             }
             backmsg.body = jsonArray.toString();
@@ -128,13 +145,62 @@ public class FightHandler extends MessageHandler {
                 json.put("token", f.token);
                 json.put("posX", f.position.x);
                 json.put("posY", f.position.y);
+                json.put("rotation", f.rotation);
                 jsonArray.add(json);
             }
             backmsg.body = jsonArray.toString();
             backmsg.type = msg.returnType;
             envelopeToGM.message = backmsg;
+            for (String sId : storage.getAllSocketIds()) {
+                System.out.println("Fight handler add envelope to " + sId);
+                Envelope envelope = new Envelope();
+                envelope.reciever = sId;
+                envelope.message = backmsg;
+                envelopes.add(envelope);
+            }
+        } else if(msg.code == 4) { // translation || rotation
+            String bodyString = msg.body;
+            String[] splitted = bodyString.split(Pattern.quote("#"));
+            int charId = Integer.valueOf(splitted[0]);
+            Position pos = new Position(Double.valueOf(splitted[1]), Double.valueOf(splitted[2]));
+            double rotation = Double.valueOf(splitted[3]);
+            Fighter fighter = arena.getFighter(charId);
+            if (fighter != null) {
+                fighter.position = pos;
+                fighter.rotation = rotation;
+            }
+            //send fighters back to GM
+            Message backmsg = new Message();
+            JsonArray jsonArray = new JsonArray();
+
+            for (Fighter f : arena.fighters) {
+                JsonObject json = new JsonObject();
+                json.put("name", f.name);
+                json.put("id", f.id);
+                json.put("portrait", f.portrait);
+                json.put("token", f.token);
+                json.put("posX", f.position.x);
+                json.put("posY", f.position.y);
+                json.put("rotation", f.rotation);
+                jsonArray.add(json);
+            }
+            backmsg.body = jsonArray.toString();
+            backmsg.type = msg.returnType;
+            //backmsg.printHeader();
+            for (String sId : storage.getAllSocketIds()) {
+                if (!sId.equals(name)) {
+                    System.out.println("Fight handler add envelope to " + sId);
+                    Envelope envelope = new Envelope();
+                    envelope.reciever = sId;
+                    envelope.message = backmsg;
+                    envelopes.add(envelope);
+                }
+            }
+            returnToSender = false;
         }
-        envelopes.add(envelopeToGM);
+        if (returnToSender) {
+            envelopes.add(envelopeToGM);
+        }
         System.out.println(envelopes);
         return envelopes;
     }
