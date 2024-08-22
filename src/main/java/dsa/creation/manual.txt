@@ -1,0 +1,57 @@
+erfahrung
+{
+    "ap": "900",
+    "max_wert_eigenschaft": "12",
+    "max_wert_fertigkeit": "10",
+    "max_wert_kampftechnik": "8",
+    "max_summe_eigenschaftspunkte": "95",
+    "max_anzahl_energie_fertigkeiten": "8",
+    "max_fremd_energie_fertigkeiten": "0"
+}
+
+spezies
+{
+    "art": "Menschen",
+    "unterart": "Mittelländer",
+    "koerperbauundaussehen": "Haar, Augen und Haut: Bei keinem anderen Menschenvolk kann man auf so unterschiedliche Haar- und Augenfarben stoßen wie bei den Mittelländern. Auch wenn braune und blonde Haartypen am häufigsten vorkommen, ist der Anblick anderer Haarfarben nicht selten. Mittelländer sind meist etwa 1,75 bis 1,85 Schritt groß.",
+    "herkunftundverbreitung": "Die Mittelländer sind die größte Untergruppe der Menschen. Ihre Vorfahren stammen zwar aus dem fernen Güldenland, doch sind sie inzwischen das vorherrschende Menschenvolk in Aventurien. Sie stellen einen Großteil der Bevölkerung des Mittel- und Horasreichs, des Svellttals, des Bornlands, der Königreiche Nostria und Andergast sowie vieler anderer Regionen.",
+    "vermehrungundalterung": "Mit Elfen und Orks können Menschen Nachkommen zeugen. Die Kinder dieser Verbindungen werden als Halbelfen bzw. Halborks bezeichnet. Menschenfrauen sind das ganze Jahr über fruchtbar. Die Schwangerschaft einer Menschenfrau dauert neun Monate. Mehrlingsgeburten sind selten, kommen aber gelegentlich vor. Menschen werden auf Dere etwa 80 Jahre alt, nicht selten erreichen sie sogar ein Alter von 90 oder über 100 Jahren.",
+    "begruessung": "Die Zwölfe zum Gruße.",
+    "verabschiedung": "Die Zwölfe mit dir.",
+    "ap": 0,
+    "automatischevorteile": [],
+    "dringendempfohlenevorteile": [],
+    "dringendempfohlenenachteile": [],
+    "typischevorteile": [],
+    "typischenachteile": [],
+    "untypischevorteile": [],
+    "untypischenachteile": [],
+    "lepgrundwert": 5,
+    "gsgrundwert": 8,
+    "skgrundwert": -5,
+    "zkgrundwert": -5,
+    "erwachsenenalter": 15,
+    "lebenserwartung": 80,
+    "eigenschaftsaenderungen": [ [ {"name": "MU","wert": 1},{"name": "KL","wert": 1},{"name": "IN","wert": 1},
+                                   {"name": "CH","wert": 1},{"name": "FF","wert": 1},{"name": "GE","wert": 1},
+                                   {"name": "KO","wert": 1},{"name": "KK","wert": 1} ] ],
+    "ueblichekulturen": [ "Andergaster","Bornländer","Horasier","Maraskaner","Mittelreicher","Nordaventurier",
+                          "Nostrier","Südaventurier","Svellttaler","Zyklopäer"],
+    "restlichekulturen": [
+        "Aranier",
+        "Fjarninger",
+        "Mhanadistani",
+        "Mohas",
+        "Nivesen",
+        "Norbarden",
+        "Novadis",
+        "Thorwaler",
+        "Auelfen",
+        "Firnelfen",
+        "Waldelfen",
+        "Ambosszwerge",
+        "Brillantzwerge",
+        "Erzzwerge",
+        "Hügelzwerge"
+    ]
+}

@@ -305,4 +305,12 @@ public class DBNamen {
         int index = random.nextInt(list.size());
         return list.get(index);
     }
+
+    public static void main(String[] args) {
+        DBNamen db = DBNamen.singleton();
+        for (int i = 0; i < 10; i++) {
+            String name = db.getRandomName("Svelttal", false, true);
+            System.out.println(name);
+        }
+    }
 }

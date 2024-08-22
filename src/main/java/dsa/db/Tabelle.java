@@ -373,4 +373,44 @@ public class Tabelle {
         query += "\n);";
         return query;
     }
+
+    public String selectAllLeftJoin(String mainJoinAttribtiue, String[] joinSchemas, String[] joinTables, String[] joinAttributes) {
+        String query = selectAll();
+        if (query.endsWith(";")) {
+            query = query.substring(0, query.length() - 1);
+        }
+        for (int i = 0; i < joinSchemas.length; i++) {
+            query += "\n\tLEFT JOIN \"" + joinSchemas[i] + "\".\"" + joinTables[i] + "\"";
+            query += "\n\t\tON " + name + ".\"" + mainJoinAttribtiue + "\" = \"" + joinTables[i] + "\".\"" + joinAttributes[i] + "\"";
+        }
+        query += ";";
+        return query;
+    }
+
+    public String addSort(String query, String[] tables, String[] orderPriority, String[] orderTypes) {
+        if (tables == null) {
+            tables = new String[orderPriority.length];
+        } else {
+            for (int i = 0; i < tables.length; i++) {
+                tables[i] = "\"" + tables[i] + "\"";
+            }
+        }
+        for (int i = 0; i < orderPriority.length; i++) {
+            tables[i] = name;
+        }
+        if (query.endsWith(";")) {
+            query = query.substring(0, query.length() - 1);
+        }
+        query += " \n\tORDER BY ";
+        for (int i = 0; i < orderPriority.length; i++) {
+            if (i == 0) {
+                query += name + ".\"" + orderPriority[i] + "\"";
+            } else {
+                query += ", " + "\"" + orderPriority[i] + "\"";
+            }
+            query += " " + orderTypes[i];
+        }
+        query += ";";
+        return query;
+    }
 }

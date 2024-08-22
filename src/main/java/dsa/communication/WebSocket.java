@@ -172,7 +172,11 @@ public class WebSocket {
             // }
             if (envelopes != null) {
                 for (Envelope e : envelopes) {
-                    getSessionOfUser(e.reciever).getAsyncRemote().sendText(jsonb.toJson(e.message));
+                    if (e != null && e.message != null && e.message.body != null && !e.message.body.equals("[EMPTY]")) {
+                        System.out.println("[WEBSOCKET] send message (" + e.message.type + ") to " + e.reciever);
+                        getSessionOfUser(e.reciever).getAsyncRemote().sendText(jsonb.toJson(e.message));
+                    }
+
                 }
             }
         }
