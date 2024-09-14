@@ -11,10 +11,7 @@ import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 
 import javax.json.Json;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -1195,8 +1192,8 @@ public class DBHeldenerschaffung {
     public static void main(String[] args) {
         String[] list = {"Ahnenzeichen","Alhanische Zauberzeichen","Allgemeine karmale Sonderfertigkeiten","Allgemeine magische Sonderfertigkeiten","Allgemeine Sonderfertigkeiten","Ausbildungsaufsätze","Bannkreise und Schutzkreise","Bannschwertzauber","Befehlssonderfertigkeiten","Beutelzauber","Chronikzauber","Dämonenpakt","Dolchritual","Elementarpakt","Erweiterte Kampfstilsonderfertigkeiten","Erweiterte Liturgiestilsonderfertigkeiten","Erweiterte Talentsonderfertigkeiten","Erweiterte Zaubersonderfertigkeiten","Feenpakt","Fluggerätritual","Gewandzauber","Gildenmagische Kugelzauber","Gildenmagische Schalenzauber","Haubenzauber","Hauerkettenzauber","Homunculus Sonderfertigkeiten","Instrumentzauber","Kampfsonderfertigkeiten","Kampfstilsonderfertigkeiten","Kappenzauber","Karmale Traditionen","Kesselzauber","Keulenzauber","Krallenkettenzauber","Kristallomantische Kugelzauber","Liturgiestilsonderfertigkeiten","Lykanthropische Gaben","Magische Traditionen","Predigt-Sonderfertigkeiten","Prügel-Sonderfertigkeiten","Ringzauber","Schalenzauber","Scharlatanische Kugelzauber","Schicksalspunkte-Sonderfertigkeit","Schweinetrommelzauber","Sichelritual","Sikaryan-Raub-Sonderfertigkeiten","Spielzeugzauber","Stabzauber","Steckenzauber","Talentstilsonderfertigkeiten","Tiersonderfertigkeiten","Tricks","Trinkhornzauber","Vampirische Gaben","Vertrautentricks","Vision-Sonderfertigkeiten","Waffenzauber","Zauberstilsonderfertigkeiten","Zauberzeichen","Zeremonialgegenstands-Sonderfertigkeiten"};
         DBHeldenerschaffung db = DBHeldenerschaffung.singleton();
-
-        db.getTalenteJson();
+        db.addBasicAusruestung(1);
+        // db.getTalenteJson();
         // System.out.println(sf);
 
     }
@@ -1250,5 +1247,405 @@ public class DBHeldenerschaffung {
             rgx = rgx.replace("}", "\\)");
         }
         return rgx;
+    }
+
+    public int getUserId(String name) {
+        Tabelle t = new Tabelle("\"Benutzer\".\"Benutzer\"");
+        String[] wantedAttribute = {"id", "Name"};
+        String[] attribute = {"Name"};
+        String[] values = {name};
+        int id = -1;
+        Connection conn = DBConnection.getConnection();
+        String query = t.selectWhereLike(wantedAttribute, attribute, values);
+        System.out.println(query);
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while(rs.next()){
+                id = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return id;
+    }
+
+    public int addCharakter(String name, String geschlecht, String tsaTag,
+                            String spezies, String kultur, String profession,
+                            String haarfarbe, String augenfarbe, String schamhaare,
+                            String brueste, String genital, int alter,
+                            int groesse, int gewicht, String titel) {
+        Tabelle t = new Tabelle("\"Charakter\".\"Charakter\"");
+        int id = -1;
+        boolean added = !checkIfCharakterExists(name);
+        String[] attributes = {"Name", "Geschlecht", "TsaTag", "Spezies", "Kultur", "Profession",
+                "Haarfarbe", "Augenfarbe", "Schamhaare", "Brueste", "Genital",
+                "Alter", "Groesse", "Gewicht", "Titel"};
+        Object[] values = {name, geschlecht, tsaTag, spezies, kultur, profession,
+                haarfarbe, augenfarbe, schamhaare, brueste, genital,
+                alter, groesse, gewicht, titel};
+        int[] pk = {};
+
+        String query = t.insertInto(attributes, values, pk);
+        if (added) {
+            // System.out.println(query);
+            try {
+                Connection conn = DBConnection.getConnection();
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+                ResultSet rs = stmt.getGeneratedKeys();
+                while(rs.next()){
+                    id = (int)rs.getFloat(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return id;
+    }
+
+    public void addCharakterToBenutzer(int u_id, int c_id) {
+        Tabelle t = new Tabelle("\"Benutzer\".\"Benutzer_Charaktere\"");
+        String[] attributes = {"BenutzerID", "CharakterID"};
+        Object[] values = {u_id, c_id};
+        int[] pk = {0, 1};
+
+        String query = t.insertInto(attributes, values, pk);
+        try {
+            Connection conn = DBConnection.getConnection();
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean checkIfCharakterExists(String name) {
+        boolean exists = false;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String query = "select \"CharakterID\" from \"Charakter\".\"Charakter\"\n" +
+                    "    where \"Name\" = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                exists = true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exists;
+    }
+
+    public void addBeinfWertForBenutzer(int id, String modifiziertes, String name, String wert, int kr) {
+        Tabelle t = new Tabelle("\"Charakter\".\"Beeinflusste_Werte_"+id+"\"");
+        String[] attributes = {"Modifiziertes", "Mod-Name", "Mod-Wert", "KR"};
+        String mod = modifiziertes;
+        if (mod == null) {
+            mod = "";
+        }
+        Object[] values = {mod, name, wert, kr};
+        int[] pk = {0, 1};
+        String query = t.insertInto(attributes, values, pk);
+        Connection conn = DBConnection.getConnection();
+        System.out.println(query);
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public void addWertForBenutzer(int id, String kategorie, String name, int wert, int abzug) {
+        Tabelle t = new Tabelle("\"Charakter\".\"Werte_"+id+"\"");
+        String[] attributes = {"Kategorie", "Name", "Wert", "Abzug"};
+        // ToDo manueller Fix
+        if (name.equals("Trink-AuP")) {
+            kategorie = "Zustand";
+        }
+        Object[] values = {kategorie, name, wert, abzug};
+        int[] pk = {1};
+        String query = t.insertInto(attributes, values, pk);
+        Connection conn = DBConnection.getConnection();
+        System.out.println(query);
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addVuNForBenutzer(int id, String name, int stufe, String kategorie, String spezifikation) {
+        Tabelle t = new Tabelle("\"Charakter\".\"VuN_"+id+"\"");
+        String[] attributes = {"Name", "Stufe", "Kategorie", "Spezifikation"};
+        Object[] values = {name, stufe, kategorie, spezifikation};
+        int[] pk = {0, 1, 2, 3};
+        String query = t.insertInto(attributes, values, pk);
+        Connection conn = DBConnection.getConnection();
+        System.out.println(query);
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addSFForBenutzer(int id, String name, int stufe, String kategorie, String spezifikation) {
+        Tabelle t = new Tabelle("\"Charakter\".\"SF_"+id+"\"");
+        String[] attributes = {"Name", "Stufe", "Kategorie", "Spezifikation"};
+        Object[] values = {name, stufe, kategorie, spezifikation};
+        int[] pk = {0, 1, 2, 3};
+        String query = t.insertInto(attributes, values, pk);
+        Connection conn = DBConnection.getConnection();
+        System.out.println(query);
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void createCharTables(int id) {
+        ArrayList<String> queries = new ArrayList<>();
+
+        queries.add("create table \"Charakter\".\"Ausruestung_" + id + "\"\n" +
+                "(\n" +
+                "    \"Itemid\"     integer\n" +
+                "        constraint ausruestung_" + id + "_gegenstand_itemid_fk\n" +
+                "            references \"Ausruestung\".\"Gegenstand\",\n" +
+                "    \"Anzahl\"     integer,\n" +
+                "    \"Zustand\"    double precision,\n" +
+                "    \"Notiz\"      varchar,\n" +
+                "    ausgeruestet boolean default true,\n" +
+                "    \"Name\"       varchar,\n" +
+                "    \"Trageort\"   varchar,\n" +
+                "    \"CharItemId\" double precision not null\n" +
+                "        constraint ausruestung_" + id + "_pk\n" +
+                "            primary key,\n" +
+                "    \"Mengenitem\" boolean\n" +
+                ");\n" +
+                "\n" +
+                "alter table \"Charakter\".\"Ausruestung_" + id + "\"\n" +
+                "    owner to postgres;");
+
+
+        queries.add("create table \"Charakter\".\"Beeinflusste_Werte_" + id + "\"\n" +
+                "(\n" +
+                "    \"Modifiziertes\" varchar not null,\n" +
+                "    \"Mod-Name\"      varchar not null,\n" +
+                "    \"Mod-Wert\"      varchar,\n" +
+                "    \"KR\"      int,\n" +
+                "    constraint beeinflusste_werte_" + id + "_pk\n" +
+                "        primary key (\"Modifiziertes\", \"Mod-Name\")\n" +
+                ");\n" +
+                "\n" +
+                "alter table \"Charakter\".\"Beeinflusste_Werte_" + id + "\"\n" +
+                "    owner to postgres;");
+
+        queries.add("create table \"Charakter\".\"Werte_" + id + "\"\n" +
+                "(\n" +
+                "    \"Kategorie\"  varchar not null,\n" +
+                "    \"Name\"  varchar not null\n" +
+                "        constraint werte_" + id + "_pk\n" +
+                "            primary key,\n" +
+                "    \"Wert\"  integer not null,\n" +
+                "    \"Abzug\" integer not null\n" +
+                ");\n" +
+                "\n" +
+                "alter table \"Charakter\".\"Werte_" + id + "\"\n" +
+                "    owner to postgres;\n" +
+                "\n" +
+                "create unique index werte_name_" + id + "_uindex\n" +
+                "    on \"Charakter\".\"Werte_" + id + "\" (\"Name\");\n" +
+                "\n");
+        queries.add("create table \"Charakter\".\"VuN_" + id + "\"\n" +
+                "(\n" +
+                "\t\"Name\" varchar not null,\n" +
+                "\t\"Stufe\" int,\n" +
+                "\t\"Kategorie\" varchar,\n" +
+                "\t\"Spezifikation\" varchar,\n" +
+                "\tconstraint vun_" + id + "_pk\n" +
+                "\t\tprimary key (\"Name\", \"Stufe\", \"Kategorie\", \"Spezifikation\")\n" +
+                ");\n");
+
+
+        queries.add("create table \"Charakter\".\"SF_" + id + "\"\n" +
+                "(\n" +
+                "\t\"Name\" varchar,\n" +
+                "\t\"Stufe\" int,\n" +
+                "\t\"Kategorie\" varchar,\n" +
+                "\t\"Spezifikation\" varchar,\n" +
+                "\tconstraint sf_id_" + id + "_pk\n" +
+                "\t\tprimary key (\"Name\", \"Stufe\", \"Kategorie\", \"Spezifikation\")\n" +
+                ");");
+        queries.add(
+                "create table \"Charakter\".\"Notiz_" + id + "\"\n" +
+                        "(\n" +
+                        "\t\"Name\" varchar not null\n" +
+                        "\t\tconstraint notiz_" + id + "_pk\n" +
+                        "\t\t\tprimary key,\n" +
+                        "\t\"Inhalt\" varchar\n" +
+                        ");");
+
+        Connection conn = DBConnection.getConnection();
+        for (String query : queries) {
+            System.out.println(query);
+            try {
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+
+            }
+        }
+        addBasicAusruestung(id);
+        addBasicwerte(id);
+    }
+
+    public void addBasicAusruestung(int id) {
+        Tabelle t = new Tabelle("\"Charakter\".\"Ausruestung_"+id+"\"");
+        // 148,1,0,"",true,Körper,Körper,6,false
+        int[] itemIds = {148,5,2,8,9,100};
+
+        int[] anzahl = {1,0,0,0,0,1};
+        int zustand = 0;
+        String notiz = "";
+        boolean ausgeruestet = true;
+
+        String name[] = {"Körper","Dukat","Silbertaler","Heller","Kreuzer","Fäuste"};
+        String trageort = "Körper";
+        boolean[] mengenItem = {false, true, true, true, true, false};
+        double[] charItemIds = new double[6];
+        String idQuery = "SELECT nextval('\"Charakter\".\"CharItemId\"');";
+        for (int i = 0; i < charItemIds.length; i++) {
+            try {
+                Connection conn = DBConnection.getConnection();
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(idQuery);
+                while(rs.next()){
+                    charItemIds[i] = rs.getDouble(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for (int i = 0; i < itemIds.length; i++) {
+            String[] attributes = {
+                    "Itemid",
+                    "Anzahl",
+                    "Zustand",
+                    "Notiz",
+                    "ausgeruestet",
+                    "Name",
+                    "Trageort",
+                    "CharItemId",
+                    "Mengenitem"};
+            Object[] values = {itemIds[i], anzahl[i], zustand, notiz, ausgeruestet, name[i], trageort,
+                    charItemIds[i], mengenItem[i]};
+            int[] pk = {7};
+
+            String query = t.insertInto(attributes, values, pk);
+            try {
+                Connection conn = DBConnection.getConnection();
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+
+    public void addBasicwerte(int id) {
+        String[] arten = {"AsP","AW","Erschöpfung","GS","INI","KaP","LeP","Schip","SK","ZK"};
+        String kat = "Grundwert";
+        for (String s : arten) {
+            addWertForBenutzer(id, kat, s, 0, 0 );
+        }
+        String[] arten2 = {
+                "RS Kopf",
+                "RS lArm",
+                "RS lBein",
+                "RS rArm",
+                "RS rBein",
+                "RS Torso"
+        };
+        kat = "Rüstung";
+        for (String s : arten2) {
+            addWertForBenutzer(id, kat, s, 0, 0 );
+        }
+        String[] arten3 = {
+                "Baumartig",
+                "Bewegungsunfähig",
+                "Bewusstlos",
+                "Blind",
+                "Blutend",
+                "Blutrausch",
+                "Brennend",
+                "Eingeengt",
+                "Feylamia",
+                "Fixiert",
+                "Handlungsunfähig",
+                "Hörigkeit",
+                "Kind der Finsternis",
+                "Kind der Nacht",
+                "Krank",
+                "Liegend",
+                "Lykanthrop",
+                "Minderer Feylamia",
+                "Minderer Vampir",
+                "Pechmagnet",
+                "Raserei",
+                "Stumm",
+                "Taub",
+                "Überrascht",
+                "Übler Geruch",
+                "Unsichtbar",
+                "Vergiftet",
+                "Versteinert",
+                "Wergestalt"
+        };
+        kat = "Status";
+        for (String s : arten3) {
+            addWertForBenutzer(id, kat, s, 0, 0 );
+        }
+
+        String[] arten4 = {
+                "Animosität",
+                "Belastung",
+                "Berauscht",
+                "Betäubung",
+                "Dämonische Auszehrung",
+                "Durst",
+                "Eiskalte Einflüsterung",
+                "Entrückung",
+                "Erregung",
+                "Furcht",
+                "Hunger",
+                "Paralyse",
+                "Schmerz",
+                "Schmutz",
+                "Sikaryan-Verlust",
+                "Theriak-Vorrat",
+                "Trance",
+                "Trink-AuP",
+                "Überanstrengung",
+                "Verwirrung"
+        };
+        kat = "Zustand";
+        for (String s : arten4) {
+            addWertForBenutzer(id, kat, s, 0, 0 );
+        }
+
+
+
     }
 }

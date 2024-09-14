@@ -306,10 +306,13 @@ public class DBNamen {
         return list.get(index);
     }
 
+    /*
+    Al'Anfa & Tiefer Süden
+    */
     public static void main(String[] args) {
         DBNamen db = DBNamen.singleton();
-        for (int i = 0; i < 10; i++) {
-            String name = db.getRandomName("Svelttal", false, true);
+        for (int i = 0; i < 25; i++) {
+            String name = db.getRandomName("Al'Anfa & Tiefer Süden", true, false);
             System.out.println(name);
         }
     }

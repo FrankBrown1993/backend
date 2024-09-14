@@ -12,6 +12,10 @@ import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -22,7 +26,7 @@ public class HeldenerschaffungHandler extends MessageHandler {
         DBHeldenerschaffung db = DBHeldenerschaffung.singleton();
         HeldenerschaffungsVerwaltung hv = HeldenerschaffungsVerwaltung.singleton();
         ArrayList<Envelope> envelopes = new ArrayList<>();
-        System.out.println(msg.body);
+        // System.out.println(msg.body);
         Message backmsg = new Message();
         Message apUpdate = null;
         //System.out.println(jsonArray.toString());
@@ -221,6 +225,7 @@ public class HeldenerschaffungHandler extends MessageHandler {
         } else if (msg.body.startsWith("werte_")) {
             String prefix = "werte_";
             String type = msg.body.substring(prefix.length());
+            System.out.println("get message with type werte_");
             if (type.equals("get")) {
                 Heldenerschaffung h = hv.map.get(name);
                 JsonObject json = new JsonObject();
@@ -255,6 +260,122 @@ public class HeldenerschaffungHandler extends MessageHandler {
                 json.put("schriften", db.getSchriftenJson());
 
                 backmsg.body = json.toString();
+            } else if (type.startsWith("set_")) {
+                String subprefix = "set_";
+                String body = type.substring(subprefix.length());
+                JsonObject werte = new JsonObject(body);
+                int id = Integer.parseInt(name);
+                System.out.println("user id: " + id);
+
+                Heldenerschaffung h = hv.map.get(name);
+                int charId = db.addCharakter("","","", h.spezies, h.kultur, h.profession,
+                        "","","","","",0,0,0,"");
+                db.addCharakterToBenutzer(id, charId);
+                db.createCharTables(charId);
+                // AP,0#Start-AP,1200,0
+                db.addBeinfWertForBenutzer(charId, "AP", "0#Start-AP", h.start_ap + "", 0);
+                int ap = h.ap + werte.getInteger("ap_werte") + werte.getInteger("ap_kampftechniken");
+                db.addBeinfWertForBenutzer(charId, "AP", "0#Heldenerschaffung", ap + "", 0);
+                // allgemeines,Sozialstatus,2,0
+                db.addWertForBenutzer(charId, "allgemeines", "Sozialstatus", 2, 0);
+                JsonArray attribute = werte.getJsonArray("attributes");
+                for (int i = 0; i < attribute.size(); i++) {
+                    JsonObject attr = attribute.getJsonObject(i);
+                    db.addWertForBenutzer(charId, "Attribut", attr.getString("name"),
+                            attr.getInteger("wert"), 0);
+                }
+                String[] talentarten = {"talente_koerper","talente_gesellschaft",
+                        "talente_natur","talente_wissen","talente_handwerk"};
+                for (String art : talentarten) {
+                    JsonArray talente = werte.getJsonArray(art);
+                    String kategorie = "Talent";
+                    for (int i = 0; i < talente.size(); i++) {
+                        JsonObject t = talente.getJsonObject(i);
+                        db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                                t.getInteger("fw"), 0);
+                    }
+
+                }
+                JsonArray kampftechniken = werte.getJsonArray("kampftechniken");
+                String kategorie = "Kampftechnik";
+                for (int i = 0; i < kampftechniken.size(); i++) {
+                    JsonObject t = kampftechniken.getJsonObject(i);
+                    db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                            t.getInteger("fw"), 0);
+                }
+
+                JsonArray sonderfertigkeiten = werte.getJsonArray("sf");
+                for (int i = 0; i < sonderfertigkeiten.size(); i++) {
+                    JsonObject sf = sonderfertigkeiten.getJsonObject(i);
+                    System.out.println(sf);
+                    int stufe = 1;
+                    int stf = 1;
+                    try {
+                        stf = sf.getInteger("stufe");
+                    } catch (ClassCastException e) {
+                        stf = Integer.parseInt(sf.getString("stufe"));
+                    }
+                    if (stf > 0) {
+                        stufe = stf;
+                    }
+                    db.addSFForBenutzer(charId, sf.getString("name"), stufe
+                            , sf.getString("kategorie"), sf.getString("spezifikation"));
+                }
+                JsonArray vun = werte.getJsonArray("vun");
+                for (int i = 0; i < vun.size(); i++) {
+                    JsonObject v = vun.getJsonObject(i);
+                    int stufe = 1;
+                    int stf = 1;
+                    try {
+                        stf = v.getInteger("stufe");
+                    } catch (ClassCastException e) {
+                        stf = Integer.parseInt(v.getString("stufe"));
+                    }
+                    if (stf > 0) {
+                        stufe = stf;
+                    }
+                    db.addVuNForBenutzer(charId, v.getString("name"), stufe
+                            , v.getString("kategorie"), v.getString("spezifikation"));
+                }
+                JsonArray sprachen = werte.getJsonArray("sprachen");
+                for (int i = 0; i < sprachen.size(); i++) {
+                    JsonObject v = sprachen.getJsonObject(i);
+                    int stufe = v.getInteger("stufe");
+                    if (stufe > 0) {
+                        db.addSFForBenutzer(charId, v.getString("name"), stufe
+                                , "", "");
+                    }
+
+                }
+                JsonArray schriften = werte.getJsonArray("schriften");
+                for (int i = 0; i < schriften.size(); i++) {
+                    JsonObject v = schriften.getJsonObject(i);
+                    int stufe = v.getInteger("stufe");
+                    if (stufe > 0) {
+                        db.addSFForBenutzer(charId, v.getString("name"), stufe
+                                , "", "");
+                    }
+                }
+                JsonArray zauber = werte.getJsonArray("zauber");
+                kategorie = "Zauber";
+                for (int i = 0; i < zauber.size(); i++) {
+                    JsonObject t = zauber.getJsonObject(i);
+                    db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                            t.getInteger("fw"), 0);
+                }
+
+                /*
+                talente_koerper: [],
+                talente_gesellschaft: [],
+                talente_natur: [],
+                talente_wissen: [],
+                talente_handwerk: [],
+                            */
+
+
+
+
+
             }
         /** Aussehen */
         } else if (msg.body.startsWith("aussehen_")) {
@@ -272,7 +393,7 @@ public class HeldenerschaffungHandler extends MessageHandler {
                 backmsg.body = json.toString();
             }
         }
-        System.out.println(msg.body);
+        // System.out.println(msg.body);
         // Todo
         Envelope envelope = new Envelope();
         envelope.reciever = name;
@@ -298,5 +419,125 @@ public class HeldenerschaffungHandler extends MessageHandler {
         jsonAP.put("start_ap", h.start_ap);
         apUpdate.body = jsonAP.toString();
         return apUpdate;
+    }
+
+    public static void main(String[] args) throws IOException {
+
+        DBHeldenerschaffung db = DBHeldenerschaffung.singleton();
+        String jsonString = new String(Files.readAllBytes(Paths.get("test.json")), StandardCharsets.UTF_8);
+        JsonObject werte = new JsonObject(jsonString);
+
+
+        int id = Integer.parseInt("9");
+        System.out.println("user id: " + id);
+        long time = System.currentTimeMillis();
+        int charId = db.addCharakter("T" + time,"TEST","TEST", "TEST", "TEST", "TEST",
+                "","","","","",0,0,0,"");
+        db.addCharakterToBenutzer(id, charId);
+        db.createCharTables(charId);
+        // AP,0#Start-AP,1200,0
+        db.addBeinfWertForBenutzer(charId, "AP", "0#Start-AP", 1200 + "", 0);
+        int ap = 0 + werte.getInteger("ap_werte") + werte.getInteger("ap_kampftechniken");
+        db.addBeinfWertForBenutzer(charId, "AP", "0#Heldenerschaffung", ap + "", 0);
+        // allgemeines,Sozialstatus,2,0
+        db.addWertForBenutzer(charId, "allgemeines", "Sozialstatus", 2, 0);
+        JsonArray attribute = werte.getJsonArray("attributes");
+        HashMap<String, Integer> attributeMap = new HashMap<>();
+        boolean flink = false;
+
+        for (int i = 0; i < attribute.size(); i++) {
+            JsonObject attr = attribute.getJsonObject(i);
+            String name = attr.getString("name");
+            int wert = attr.getInteger("wert");
+            attributeMap.put(name, wert);
+            db.addWertForBenutzer(charId, "Attribut", name,
+                    wert, 0);
+        }
+        String[] talentarten = {"talente_koerper","talente_gesellschaft",
+                "talente_natur","talente_wissen","talente_handwerk"};
+        for (String art : talentarten) {
+            JsonArray talente = werte.getJsonArray(art);
+            String kategorie = "Talent";
+            for (int i = 0; i < talente.size(); i++) {
+                JsonObject t = talente.getJsonObject(i);
+                db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                        t.getInteger("fw"), 0);
+            }
+
+        }
+        JsonArray kampftechniken = werte.getJsonArray("kampftechniken");
+        String kategorie = "Kampftechnik";
+        for (int i = 0; i < kampftechniken.size(); i++) {
+            JsonObject t = kampftechniken.getJsonObject(i);
+            db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                    t.getInteger("fw"), 0);
+        }
+
+        JsonArray sonderfertigkeiten = werte.getJsonArray("sf");
+        for (int i = 0; i < sonderfertigkeiten.size(); i++) {
+            JsonObject sf = sonderfertigkeiten.getJsonObject(i);
+            System.out.println(sf);
+            int stufe = 1;
+            int stf = 1;
+            try {
+                stf = sf.getInteger("stufe");
+            } catch (ClassCastException e) {
+                stf = Integer.parseInt(sf.getString("stufe"));
+            }
+            if (stf > 0) {
+                stufe = stf;
+            }
+            String name = sf.getString("name");
+            if (name.equals("Flink")) {
+                flink = true;
+            }
+            db.addSFForBenutzer(charId, name, stufe
+                    , sf.getString("kategorie"), sf.getString("spezifikation"));
+        }
+        JsonArray vun = werte.getJsonArray("vun");
+        for (int i = 0; i < vun.size(); i++) {
+            JsonObject v = vun.getJsonObject(i);
+            int stufe = 1;
+            int stf = 1;
+            try {
+                stf = v.getInteger("stufe");
+            } catch (ClassCastException e) {
+                stf = Integer.parseInt(v.getString("stufe"));
+            }
+            if (stf > 0) {
+                stufe = stf;
+            }
+            db.addVuNForBenutzer(charId, v.getString("name"), stufe
+                    , v.getString("kategorie"), v.getString("spezifikation"));
+        }
+        JsonArray sprachen = werte.getJsonArray("sprachen");
+        for (int i = 0; i < sprachen.size(); i++) {
+            JsonObject v = sprachen.getJsonObject(i);
+            int stufe = v.getInteger("stufe");
+            if (stufe > 0) {
+                db.addSFForBenutzer(charId, v.getString("name"), stufe
+                        , "", "");
+            }
+
+        }
+        JsonArray schriften = werte.getJsonArray("schriften");
+        for (int i = 0; i < schriften.size(); i++) {
+            JsonObject v = schriften.getJsonObject(i);
+            int stufe = v.getInteger("stufe");
+            if (stufe > 0) {
+                db.addSFForBenutzer(charId, v.getString("name"), stufe
+                        , "", "");
+            }
+        }
+        JsonArray zauber = werte.getJsonArray("zauber");
+        kategorie = "Zauber";
+        for (int i = 0; i < zauber.size(); i++) {
+            JsonObject t = zauber.getJsonObject(i);
+            db.addWertForBenutzer(charId, kategorie, t.getString("name"),
+                    t.getInteger("fw"), 0);
+        }
+
+
+        System.out.println(werte);
     }
 }

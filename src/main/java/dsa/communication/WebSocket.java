@@ -78,6 +78,7 @@ public class WebSocket {
         Jsonb jsonb = JsonbBuilder.create();
         Message m = jsonb.fromJson(message, Message.class);
         if (m.seq >= 0) {
+            System.out.println("get sequenced message");
             Message compound = null;
             if (m.body.equals("~END~")) {
                 compound = getSequencedMessage(m, name);
@@ -91,6 +92,7 @@ public class WebSocket {
                 handleMessage(m, name);
             }
         } else {
+            System.out.println("get solid message");
             handleMessage(m, name);
         }
     }
@@ -163,6 +165,8 @@ public class WebSocket {
             handler = new AuthHandler();
         } else if (m.type.equals("heldenerschaffung")) {
             handler = new HeldenerschaffungHandler();
+        } else if (m.type.equals("katalog")) {
+            handler = new KatalogHandler();
         }
         if (handler != null) {
             //Envelope envelope = handler.handleMessage(m, name);
